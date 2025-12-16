@@ -1,13 +1,19 @@
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+  
+
+
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
   })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    // If the URL is missing, this line crashes the app
+    process.env.NEXT_PUBLIC_SUPABASE_URL!, 
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
@@ -15,19 +21,18 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set({ name, value, ...options }))
-          supabaseResponse = NextResponse.next({
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          response = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set({ name, value, ...options })
+            response.cookies.set(name, value, options)
           )
         },
       },
     }
   )
 
-  // 1. Get User
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -39,10 +44,7 @@ export async function updateSession(request: NextRequest) {
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
-
-  // 3. Update Session
-  return supabaseResponse
 }
 
 
-
+ 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { createTeamMember } from '@/app/actions/team';
+import { createUser } from '@/app/action/create-user';
 import { Button } from '@/components/ui/button'; // Assuming you have shadcn or similar
 import { Input } from '@/components/ui/input';
 
@@ -32,7 +32,7 @@ export default function AddUserForm() {
     const formData = new FormData();
     Object.entries(form).forEach(([key, value]) => formData.append(key, value));
 
-    const result = await createTeamMember(formData);
+    const result = await createUser(formData);
 
     if (result.success) {
       alert("✅ User Created Successfully!");

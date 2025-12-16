@@ -1,63 +1,70 @@
 'use server'
 
-import { createClient } from '@supabase/supabase-js'; // Note: Using direct SDK for Admin rights
-import { db } from '@/db';
-import { users } from '@/db/schema';
-import { revalidatePath } from 'next/cache';
+import { createClient } from '@supabase/supabase-js'
+import { revalidatePath } from 'next/cache'
+import { db } from '@/db' 
+import { users } from '@/db/schema' 
 
-// WARNING: This client uses the SERVICE ROLE KEY.
-// It bypasses all security rules. Only use in Server Actions.
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export async function createUser(formData: FormData) {
+  // 1. Setup Admin Client
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
 
-export async function createTeamMember(formData: FormData) {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-  const phone = formData.get('phone') as string;
-  const role = formData.get('role') as string;
+  // 2. Extract Data
+  const email = formData.get('email') as string
+  const role = formData.get('role') as string
+  const name = formData.get('name') as string
+  const mobileNumber = formData.get('mobileNumber') as string
 
-  // --- 1. PASSWORD GENERATION LOGIC ---
-  // Formula: FirstName + "@" + First 4 digits of phone
-  const firstName = name.split(' ')[0];
-  const phonePrefix = phone.substring(0, 4);
-  const autoPassword = `${firstName}@${phonePrefix}`;
+  // --- PASSWORD GENERATION LOGIC ---
+  // 1. Remove spaces from name (e.g., "John Doe" becomes "JohnDoe")
+  const cleanName = name.replace(/\s/g, '');
+  // 2. Take first 4 digits of mobile
+  const mobilePrefix = mobileNumber.substring(0, 4);
+  // 3. Combine: Name + @ + MobilePrefix
+  const password = `${cleanName}@${mobilePrefix}`;
+  // ---------------------------------
 
-  try {
-    // --- 2. CREATE IN SUPABASE AUTH ---
-    // This creates the actual login account
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: email,
-      password: autoPassword,
-      email_confirm: true, // Auto-confirm so they don't need to click a link
-      user_metadata: { name: name }
-    });
+  console.log("GENERATED PASSWORD:", password) // Helpful for debugging
 
-    if (authError) {
-      return { success: false, error: authError.message };
-    }
+  // 3. Create Auth User (Supabase)
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password: password, // Use the generated password
+    email_confirm: true,
+    user_metadata: { name: name }
+  })
 
-    if (!authData.user) {
-      return { success: false, error: "Failed to create Auth User" };
-    }
-
-    // --- 3. CREATE IN DATABASE (DRIZZLE) ---
-    // This creates the profile with the Role and Phone Number
-    await db.insert(users).values({
-      id: authData.user.id, // Links to the Auth User we just created
-      email: email,
-      name: name,
-      mobileNumber: phone,
-      role: role
-    });
-
-    // Refresh the Team list UI
-    revalidatePath('/dashboard/users');
-    return { success: true };
-
-  } catch (error) {
-    console.error("Add User Error:", error);
-    return { success: false, error: "Internal System Error" };
+  if (authError) {
+    return { success: false, error: authError.message }
   }
+
+  // 4. Create Public User Record (Drizzle)
+  if (authData.user) {
+    try {
+      await db.insert(users).values({
+        id: authData.user.id,
+        email: email,
+        name: name,
+        mobileNumber: mobileNumber,
+        role: role as 'admin' | 'user',
+      })
+    } catch (dbError: any) {
+      console.error('DB Error:', dbError)
+      
+      // Cleanup: If DB fails, delete the Auth user
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      
+      if (dbError.code === '23505') {
+         return { success: false, error: 'Email or Mobile Number already exists.' }
+      }
+      return { success: false, error: 'Failed to save user profile.' }
+    }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
 }
