@@ -1,4 +1,0 @@
-# Make this file .env.local 
-MAILEROOO_API_KEY = 
-DATABASE_URL=""
-SUPABASE_ANON_KEY = 
