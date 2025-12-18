@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useActionState } from "react"
-import { sendEmail, type EmailState } from "@/app/action/send-email" // Import your action
+import { sendEmail, type EmailState } from "@/app/action/send-email" 
 import {
   Inbox,
   Star,
@@ -10,12 +10,14 @@ import {
   Trash2,
   AlertCircle,
   Search,
-  RefreshCw,
-  CheckSquare,
   ChevronLeft,
   ChevronRight,
   Send,
-  Loader2
+  Loader2,
+  X,
+  User,
+  Reply,
+  Forward
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner" 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar" // Make sure to have this component or remove if not needed
+import { Separator } from "@/components/ui/separator"
 
 // Define the shape of the log coming from DB
 type EmailLog = {
@@ -41,17 +45,22 @@ const initialState: EmailState = {
 }
 
 export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
-  // --- STATE FOR UI ---
-  const [emailType, setEmailType] = useState<"broadcast" | "direct">("direct") // Default to direct for now
+  // --- UI STATE ---
+  const [emailType, setEmailType] = useState<"broadcast" | "direct">("direct")
   const [selectedFolder, setSelectedFolder] = useState("inbox")
   const [selectedEmails, setSelectedEmails] = useState<number[]>([])
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
-  // --- STATE FOR FORM ACTION ---
+  // --- NEW FUNCTIONALITY STATE ---
+  const [selectedEmail, setSelectedEmail] = useState<EmailLog | null>(null)
+  const [searchQuery, setSearchQuery] = useState("") 
+  const detailViewRef = useRef<HTMLDivElement>(null)
+
+  // --- SERVER ACTION STATE ---
   const [state, formAction, isPending] = useActionState(sendEmail, initialState)
   const formRef = useRef<HTMLFormElement>(null)
 
-  // Handle Success/Error Toasts
+  // 1. Toast & Reset Logic
   useEffect(() => {
     if (state.success) {
       toast.success("Email sent successfully!")
@@ -61,8 +70,31 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
     }
   }, [state])
 
+  // 2. Auto-Scroll Logic
+  useEffect(() => {
+    if (selectedEmail && detailViewRef.current) {
+        setTimeout(() => {
+            detailViewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+        }, 100)
+    }
+  }, [selectedEmail])
+
+  // 3. Search Filtering Logic
+  const filteredLogs = useMemo(() => {
+    if (!searchQuery) return logs;
+    const lowerQuery = searchQuery.toLowerCase();
+    return logs.filter((email) => {
+        const cleanBody = email.body.replace(/<[^>]*>?/gm, '').toLowerCase();
+        return (
+            email.subject.toLowerCase().includes(lowerQuery) ||
+            email.recipients.toLowerCase().includes(lowerQuery) ||
+            cleanBody.includes(lowerQuery)
+        );
+    });
+  }, [logs, searchQuery]);
+
   const folders = [
-    { id: "inbox", name: "Sent", icon: Inbox }, // Renamed to Sent since this is a sender dashboard
+    { id: "inbox", name: "Sent", icon: Inbox },
     { id: "starred", name: "Starred", icon: Star },
     { id: "archive", name: "Archive", icon: Archive },
     { id: "spam", name: "Spam", icon: AlertCircle },
@@ -74,9 +106,10 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
   }
 
   return (
-    <div className="p-8 h-full flex flex-col overflow-y-auto bg-[#121212]">
-      {/* Email Composer Section */}
-      <Card className="mb-8 border-border/50">
+    <div className="p-8 h-full flex flex-col overflow-y-auto bg-[#121212] space-y-8">
+      
+      {/* --- SECTION 1: COMPOSER --- */}
+      <Card className="border-border/50">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Send className="w-5 h-5 text-muted-foreground" />
@@ -87,7 +120,6 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Email Type Toggle */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button
               type="button"
@@ -115,54 +147,62 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
             </button>
           </div>
 
-          {/* Email Form - Connected to Server Action */}
           <form ref={formRef} action={formAction} className="space-y-4 *:m-1 *:p-3">
-            
-            <div className="gap-4 *:mb-4">
-                
+             {/* FROM */}
+             <div>
+                <label className="text-sm font-medium text-foreground block mb-2">From</label>
+                <div className="flex items-center gap-2">
+                    <Input 
+                        name="fromPrefix" 
+                        placeholder="noreply" 
+                        defaultValue="noreply"
+                        className="bg-background border-gray-700 hover:bg-[#1A1A1A]" 
+                        required
+                    />
+                </div>
+            </div>
 
-                {/* TO INPUT (Added to match logic) */}
+            {/* TO */}
+            <div className="gap-4 *:mb-4">
                 <div>
                     <label className="text-sm font-medium text-foreground block mb-2">To</label>
                     <Input 
                         name="to" 
                         type="email" 
                         placeholder="client@example.com" 
-                        className="bg-background  border-gray-700" 
+                        className="bg-background border-gray-700" 
                         required 
                     />
                 </div>
             </div>
 
-            {/* FROM INPUT (Added to match logic) */}
-                <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">From</label>
-                    <div className="flex items-center gap-2">
-                        <Input 
-                            name="fromPrefix" 
-                            placeholder="noreply" 
-                            defaultValue="noreply"
-                            className="bg-background border-gray-700 hover:bg-[#1A1A1A]" 
-                            required
-                        />
-                         
-                    </div>
-                </div>
+            {/* TITLE (Sender Name) */}
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-2">Title (Sender Name)</label>
+              <Input 
+                name="title" 
+                placeholder="e.g. Support Team" 
+                className="bg-background border-gray-700" 
+                required 
+              />
+            </div>
 
+            {/* SUBJECT */}
             <div>
               <label className="text-sm font-medium text-foreground block mb-2">Subject</label>
               <Input name="subject" placeholder="Email subject" className="bg-background border-gray-700" required />
             </div>
 
+            {/* MESSAGE */}
             <div>
               <label className="text-sm font-medium text-foreground block mb-2">Message</label>
-              <Textarea name="message" placeholder="Enter message....." rows={6} className="bg-background resize-none  border-gray-700" required />
+              <Textarea name="message" placeholder="Enter message....." rows={6} className="bg-background resize-none border-gray-700" required />
             </div>
 
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground  border-gray-700"
+              className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground border-gray-700"
               size="lg"
             >
               {isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
@@ -172,7 +212,7 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
         </CardContent>
       </Card>
 
-      {/* Email History Section - Populated with Real DB Logs */}
+      {/* --- SECTION 2: HISTORY LIST --- */}
       <Card className="border-border/50">
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -185,57 +225,37 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
         </CardHeader>
         <CardContent>
           <div className="flex gap-6">
-            <div className={cn("transition-all duration-300 ease-in-out", isSidebarCollapsed ? "w-0 overflow-hidden" : "w-48 shrink-0")}>
-                <div className="space-y-1">
-                  {folders.map((folder) => {
-                    const Icon = folder.icon
-                    return (
-                      <button
-                        key={folder.id}
-                        onClick={() => setSelectedFolder(folder.id)}
-                        className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                          selectedFolder === folder.id
-                            ? "bg-primary/10 text-primary border border-primary/20"
-                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                        )}
-                      >
-                        <Icon className="w-4 h-4" />
-                        {folder.name}
-                      </button>
-                    )
-                  })}
-                </div>
-            </div>
+            
 
-            {/* Email List */}
             <div className="flex-1 min-w-0">
-              {/* Search and Actions Bar */}
               <div className="flex items-center gap-2 mb-4 pb-4 border-white/5">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 hover:bg-foreground/5 hover:text-foreground"
-                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                >
-                  {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-                </Button>
                 <div className="relative flex-1 border rounded-md">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Search emails..." className="pl-9 bg-background border border-gray-700" />
+                  <Input 
+                    placeholder="Search emails..." 
+                    className="pl-9 bg-background border border-gray-700"
+                    // CONNECTED SEARCH
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                   />
                 </div>
               </div>
 
-              {/* Email Items (MAPPED FROM DB) */}
               <div className="space-y-px">
-                {logs.length === 0 ? (
-                    <div className="text-center py-10 text-muted-foreground text-sm">No emails sent yet.</div>
+                {filteredLogs.length === 0 ? (
+                    <div className="text-center py-10 text-muted-foreground text-sm">
+                        {searchQuery ? "No matching emails found." : "No emails sent yet."}
+                    </div>
                 ) : (
-                    logs.map((email) => (
+                    filteredLogs.map((email) => (
                     <div
                         key={email.id}
-                        className="flex items-center gap-4 p-3 hover:bg-foreground/5 rounded-lg cursor-pointer transition-colors group border border-transparent hover:border-border/50"
-                        onClick={() => toggleEmailSelection(email.id)}
+                        // CLICK EVENT ADDED HERE
+                        onClick={() => setSelectedEmail(email)}
+                        className={cn(
+                            "flex items-center gap-4 p-3 hover:bg-foreground/5 rounded-lg cursor-pointer transition-colors group border border-transparent hover:border-border/50",
+                            selectedEmail?.id === email.id ? "bg-foreground/5 border-gray-700" : ""
+                        )}
                     >
                         <input
                         type="checkbox"
@@ -254,21 +274,17 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
                         </button>
                         
                         <div className="flex-1 min-w-0 grid grid-cols-[150px_1fr_100px] gap-4 items-center">
-                        {/* 1. Recipient Name */}
-                        <span className="text-sm font-medium text-foreground truncate" title={email.recipients}>
-                            To: {email.recipients.split('@')[0]}
-                        </span>
-                        
-                        {/* 2. Subject & Preview */}
-                        <div className="min-w-0">
-                            <div className="flex gap-2">
-                            <span className="text-sm font-medium text-foreground truncate">{email.subject}</span>
-                            <span className="text-sm text-muted-foreground truncate">
-                                - {email.body.replace(/<[^>]*>?/gm, '').substring(0, 50)}...
+                            <span className="text-sm font-medium text-foreground truncate" title={email.recipients}>
+                                To: {email.recipients.split('@')[0]}
                             </span>
+                            <div className="min-w-0">
+                                <div className="flex gap-2">
+                                <span className="text-sm font-medium text-foreground truncate">{email.subject}</span>
+                                <span className="text-sm text-muted-foreground truncate">
+                                    - {email.body.replace(/<[^>]*>?/gm, '').substring(0, 50)}...
+                                </span>
+                                </div>
                             </div>
-                        </div>
-
                             <span className="text-xs text-muted-foreground text-right">
                                 {email.sentAt ? new Date(email.sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}     
                             </span>
@@ -281,6 +297,64 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* --- SECTION 3: READ VIEW (Appears Below) --- */}
+      {selectedEmail && (
+        <div ref={detailViewRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+            <Card className="border-gray-700 shadow-lg overflow-hidden bg-[#1E1E1E]">
+                {/* Header Controls */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+                    <h3 className="font-semibold text-lg truncate pr-4 text-foreground">{selectedEmail.subject}</h3>
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedEmail(null)} title="Close">
+                            <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                        </Button>
+                    </div>
+                </div>
+
+                <CardContent className="p-6 md:p-8">
+                    {/* Sender Info Row */}
+                    <div className="flex items-start justify-between mb-8">
+                        <div className="flex gap-4">
+                            <Avatar className="h-10 w-10">
+                                <AvatarFallback className="bg-primary/20 text-primary"><User className="w-5 h-5" /></AvatarFallback>
+                            </Avatar>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-sm text-foreground">CRM System</span>
+                                    <span className="text-xs text-muted-foreground">&lt;noreply@{process.env.NEXT_PUBLIC_MAILEROO_DOMAIN || 'domain.com'}&gt;</span>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    to <span className="text-foreground">{selectedEmail.recipients}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                            {selectedEmail.sentAt ? new Date(selectedEmail.sentAt).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' }) : ''}
+                        </div>
+                    </div>
+
+                    {/* Email Body Content */}
+                    <div className="prose prose-sm max-w-none text-gray-300 dark:prose-invert">
+                        <div dangerouslySetInnerHTML={{ __html: selectedEmail.body }} />
+                    </div>
+
+                    <Separator className="my-8 bg-gray-700" />
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                        <Button variant="outline" className="gap-2 text-muted-foreground border-gray-700 hover:text-foreground hover:bg-gray-800">
+                            <Reply className="w-4 h-4" /> Reply
+                        </Button>
+                        <Button variant="outline" className="gap-2 text-muted-foreground border-gray-700 hover:text-foreground hover:bg-gray-800">
+                            <Forward className="w-4 h-4" /> Forward
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      )}
+
     </div>
   )
 }

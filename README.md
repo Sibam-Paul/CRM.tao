@@ -38,9 +38,11 @@ Make sure you have [Node.js](https://nodejs.org/en/) and [pnpm](https://pnpm.io/
     ```bash
     pnpm install
     ```
+    '''npm install drizzle-orm postgres'''
+    '''npm install @supabase/supabase-js @supabase/ssr'''
 
 3.  **Set up environment variables:**
-
+    
     Create a `.env.local` file in the root of your project and add the following variables. You can get these from your Supabase project settings.
 
     ```env
@@ -82,7 +84,5 @@ src/
 └── utils/        # Supabase client and server utilities
 ```
 
-## 📄 License
 
-This project is licensed under the MIT License.
  

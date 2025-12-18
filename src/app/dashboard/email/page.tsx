@@ -9,7 +9,7 @@ export default async function EmailPage() {
     .select()
     .from(emailLogs)
     .orderBy(desc(emailLogs.sentAt))
-    .limit(100)
+    .limit(10)
 
   return <EmailDashboard logs={logs} />
 }

@@ -62,7 +62,7 @@ export default async function DashboardPage() {
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.title} className="overflow-hidden border-border/50">
+            <Card key={stat.title} className="overflow-hidden border-gray-400">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
                 <Icon className="w-4 h-4 text-muted-foreground" />

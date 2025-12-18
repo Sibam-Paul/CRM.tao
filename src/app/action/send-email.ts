@@ -15,15 +15,20 @@ export type EmailState = {
 export async function sendEmail(prevState: EmailState, formData: FormData): Promise<EmailState> {
   const fromPrefix = formData.get("fromPrefix") as string
   const to = formData.get("to") as string
+  const title = formData.get("title") as string // <--- NEW FIELD
   const subject = formData.get("subject") as string
   const message = formData.get("message") as string
 
-  // Environment check (prevents crashes if env is missing)
+  // Environment check
   if (!process.env.MAILEROO_DOMAIN || !process.env.MAILEROO_API_KEY) {
      return { success: false, error: "Server configuration missing (Env)", message: "" }
   }
 
   const fromAddress = `${fromPrefix}@${process.env.MAILEROO_DOMAIN}`
+  // Use the custom Title if provided, otherwise fallback to the prefix
+  const displayName = title || fromPrefix 
+
+  console.log(`📨 Sending from ${displayName} <${fromAddress}> to ${to}...`)
 
   try {
     const response = await fetch('https://smtp.maileroo.com/api/v2/emails', {
@@ -33,7 +38,10 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
         'X-Api-Key': process.env.MAILEROO_API_KEY,
       },
       body: JSON.stringify({
-        from: { address: fromAddress, display_name: `${fromPrefix}` },
+        from: { 
+            address: fromAddress, 
+            display_name: displayName // title field 
+        },
         to: [{ address: to, display_name: "Recipient" }],
         subject: subject,
         html: message,
@@ -44,7 +52,6 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
     const data = await response.json()
 
     if (!data.success) {
-      // ✅ ALWAYS return 'message' (even if empty)
       return { success: false, error: data.message || "Failed to send", message: "" }
     }
 
@@ -59,7 +66,6 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
 
     revalidatePath('/dashboard/email')
     
-    // ✅ ALWAYS return 'error' (even if empty)
     return { success: true, message: "Email sent successfully!", error: "" }
 
   } catch (error: any) {
