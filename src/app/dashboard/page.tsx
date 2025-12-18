@@ -1,6 +1,13 @@
+import { createClient } from "@/utils/supabase/server";
 import { Users, DollarSign, Activity } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-export default function DashboardPage() {
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const stats = [
     {
       title: "Total Revenue",
@@ -34,14 +41,23 @@ export default function DashboardPage() {
     },
   ]
 
+  const getFirstName = () => {
+    if (user?.email) {
+      const emailName = user.email.split("@")[0];
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+    return "AlphaOne";
+  };
+
+
   return (
-    <div className="p-8">
+    <div className="p-8 bg-[#121212] min-h-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's what's happening with your business today.</p>
+        <p className="text-muted-foreground">Welcome back, {getFirstName()}!</p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid */} 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {stats.map((stat) => {
           const Icon = stat.icon
