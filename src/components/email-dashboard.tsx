@@ -3,22 +3,8 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useActionState } from "react"
 import { sendEmail, type EmailState } from "@/app/action/send-email" 
-import {
-  Inbox,
-  Star,
-  Archive,
-  Trash2,
-  AlertCircle,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  Send,
-  Loader2,
-  X,
-  User,
-  Reply,
-  Forward
-} from "lucide-react"
+import { Inbox,Star, Archive, Trash2, AlertCircle, Search, ChevronLeft, ChevronRight, Send, Loader2, X, User, Reply, Forward} from "lucide-react"
+import DOMPurify from "isomorphic-dompurify";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -93,13 +79,7 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
     });
   }, [logs, searchQuery]);
 
-  const folders = [
-    { id: "inbox", name: "Sent", icon: Inbox },
-    { id: "starred", name: "Starred", icon: Star },
-    { id: "archive", name: "Archive", icon: Archive },
-    { id: "spam", name: "Spam", icon: AlertCircle },
-    { id: "trash", name: "Trash", icon: Trash2 },
-  ]
+
 
   const toggleEmailSelection = (id: number) => {
     setSelectedEmails((prev) => (prev.includes(id) ? prev.filter((emailId) => emailId !== id) : [...prev, id]))
@@ -241,7 +221,7 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
                 </div>
               </div>
 
-              <div className="space-y-px">
+              <div className="space-y-px h-[50vh] overflow-y-auto scroll-auto">
                 {filteredLogs.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground text-sm">
                         {searchQuery ? "No matching emails found." : "No emails sent yet."}
@@ -336,7 +316,8 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
 
                     {/* Email Body Content */}
                     <div className="prose prose-sm max-w-none text-gray-300 dark:prose-invert">
-                        <div dangerouslySetInnerHTML={{ __html: selectedEmail.body }} />
+                        {/* 2. Sanitize BEFORE rendering */}
+                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedEmail.body) }} />
                     </div>
 
                     <Separator className="my-8 bg-gray-700" />

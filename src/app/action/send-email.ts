@@ -3,7 +3,9 @@
 import { db } from "@/db"
 import { emailLogs } from "@/db/schema"
 import { revalidatePath } from "next/cache"
-
+import { createClient as createSupabaseServer } from "@/utils/supabase/server"
+import { users } from "@/db/schema"
+import { eq } from "drizzle-orm"
 // 1. Define the Shape explicitly
 export type EmailState = {
   success: boolean
@@ -18,7 +20,19 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
   const title = formData.get("title") as string // <--- NEW FIELD
   const subject = formData.get("subject") as string
   const message = formData.get("message") as string
+  
+  const supabase = await createSupabaseServer()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) return { success: false, error: "Unauthorized", message: "" }
 
+  const dbUser = await db.select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, user.id))
+
+  if (dbUser[0]?.role !== 'admin') {
+     return { success: false, error: "Unauthorized: Admins only.", message: "" }
+  }
   // Environment check
   if (!process.env.MAILEROO_DOMAIN || !process.env.MAILEROO_API_KEY) {
      return { success: false, error: "Server configuration missing (Env)", message: "" }
