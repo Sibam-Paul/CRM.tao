@@ -1,3 +1,4 @@
+// src/app/dashboard/layout.tsx
 import { redirect } from "next/navigation"
 import { createClient } from "@/utils/supabase/server"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
@@ -12,27 +13,40 @@ export default async function DashboardLayout({
 }) {
   const supabase = await createClient()
 
-  // 1. Auth Check: Get the logged-in user from Supabase
+  // 1. Auth Check: Ensure there is a valid Supabase session
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return redirect("/auth/login")
   }
 
-  // 2. Role Check: Fetch the REAL role from your Database
-  // We select only the 'role' field where the ID matches the logged-in user
+  // 2. Authorization Check: Fetch the user record from your internal DB
   const dbResult = await db
-    .select({ role: users.role })
+    .select({ 
+      role: users.role,
+      email: users.email 
+    })
     .from(users)
     .where(eq(users.id, user.id))
 
-  // If we found a user in the DB, use their role. Otherwise default to "user"
-  const userRole = dbResult[0]?.role || "user"
+  const dbUser = dbResult[0]
+
+  // 🔒 FAIL-CLOSED LOGIC
+  // If the user exists in Supabase Auth but NOT in our CRM database, 
+  // they are an unauthorized "phantom" user. We must kick them out.
+  if (!dbUser) {
+    console.warn(`Unauthorized access attempt: User ${user.email} not found in database.`)
+    // Redirect to login with a specific error message
+    return redirect("/auth/login?error=account_not_found")
+  }
+
+  // Use the verified role from the database
+  const userRole = dbUser.role || "user"
 
   return (
     <div className="flex h-screen bg-black">
       <DashboardSidebar 
-        userEmail={user.email || ""} 
+        userEmail={dbUser.email || ""} 
         userRole={userRole} 
       />
 

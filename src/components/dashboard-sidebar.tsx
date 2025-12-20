@@ -69,7 +69,7 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
       // This ensures the menu slides down visually with the button
       setTimeout(() => {
         setIsMenuOpen(false)
-      }, 150)
+      }, 90)
     }
   }
 

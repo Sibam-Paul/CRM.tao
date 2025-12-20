@@ -38,6 +38,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // 👇 CRITICAL FIX: Return the response so the app continues
+
   return response 
 }
