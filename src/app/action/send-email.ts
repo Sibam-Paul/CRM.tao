@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache"
 import { createClient as createSupabaseServer } from "@/utils/supabase/server"
 import { users } from "@/db/schema"
 import { eq } from "drizzle-orm"
-// 1. Define the Shape explicitly
+
 export type EmailState = {
   success: boolean
   message: string
@@ -68,6 +68,8 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
 
     if (!data.success) {
       return { success: false, error: data.message || "Failed to send", message: "" }
+      console.log("failed to send the message");
+      
     }
 
     await db.insert(emailLogs).values({

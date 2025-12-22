@@ -8,6 +8,7 @@ export const users = pgTable('users', {
   name: text('name'),
   mobileNumber: text("mobile_number").notNull().unique(),
   role: text('role').default('user'), // 'admin' or 'user'
+  avatarUrl: text('avatar_url'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 

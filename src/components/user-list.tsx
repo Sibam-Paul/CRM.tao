@@ -6,7 +6,7 @@ import { Search, User, Trash2, ChevronDown, ChevronUp, Loader2, Phone, Shield, F
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback , AvatarImage} from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { deleteUser } from "@/app/action/delete-user" 
 import { toast } from "sonner"
@@ -29,6 +29,7 @@ interface CRMUser {
   mobileNumber: string
   role: string | null
   createdAt: Date | null
+  avatarUrl: string | null
 }
 
 export function UserList({ initialUsers }: { initialUsers: CRMUser[] }) {
@@ -120,6 +121,10 @@ export function UserList({ initialUsers }: { initialUsers: CRMUser[] }) {
                   className="w-full flex items-center gap-3 p-3 text-left"
                 >
                   <Avatar className="h-10 w-10 border border-[#2E2F2F]">
+                    <AvatarImage 
+                        src={user.avatarUrl || `https://avatar.vercel.sh/${user.email}.png`} 
+                        className="object-cover"
+                     />
                     <AvatarFallback className="bg-foreground/5 text-muted-foreground">
                       <User className="w-5 h-5" />
                     </AvatarFallback>

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import React, { useState, useRef } from "react"
-import { LayoutDashboard, Mail, FileText, Settings, UserPlus, LogOut, User, CreditCard, Bell } from "lucide-react" 
+import { LayoutDashboard, Mail, FileText, Settings, UserPlus, LogOut, User, CreditCard, Bell ,TriangleAlert} from "lucide-react" 
 import { cn } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -26,9 +26,11 @@ const navItems = [
 interface DashboardSidebarProps {
   userEmail: string
   userRole: string
+  userName?: string | null     
+  userAvatar?: string | null
 }
 
-export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps) {
+export function DashboardSidebar({ userEmail, userRole, userName, userAvatar }: DashboardSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -145,11 +147,17 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
             }}
           >
             <Avatar className="h-9 w-9 rounded-xl">
-              <AvatarImage src={`https://avatar.vercel.sh/${userEmail}.png`} alt={userEmail} />
-              <AvatarFallback>{userEmail?.substring(0, 2).toUpperCase()}</AvatarFallback>
+               <AvatarImage 
+                src={userAvatar || `https://avatar.vercel.sh/${userEmail}.png`} 
+                alt={userEmail}
+                className="object-cover" 
+              />
+                <AvatarFallback>{userEmail?.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="ml-1 text-left ">
-              <div className="text-sm font-medium text-foreground truncate capitalize">{userRole}</div>
+              <div className="text-sm font-medium text-foreground truncate capitalize">
+                {userName || userRole} 
+              </div>
               <div className="text-xs text-muted-foreground truncate w-32">{userEmail}</div>
             </div>
           </div>
@@ -183,17 +191,25 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
 
             <div className="space-y-1">
               {[
-                { icon: User, label: "Profile", delay: '150ms' }, 
-                { icon: CreditCard, label: "Billing", delay: '250ms' }, 
-                { icon: Bell, label: "Notifications", delay: '350ms' },
+                { icon: TriangleAlert, label: "under-construction", delay: '150ms' , href: "/dashboard" }, 
+                { icon: TriangleAlert, label: "under-construction", delay: '250ms' , href: "/dashboard"  }, 
+                {
+                  icon: User, 
+                  label: "Profile settings", 
+                  delay: '150ms',
+                  href: "/dashboard/profile" 
+                },
               ].map((item, idx) => (
                 <DropdownMenuItem 
                   key={idx}
                   className="cursor-pointer animate-in  slide-in-from-top-1 duration-300 fill-mode-forwards"
                   style={{ animationDelay: item.delay }}
+                  asChild
                 >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  <span>{item.label}</span>
+                 <Link href={item.href }>
+                    <item.icon className="mr-2 h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
                 </DropdownMenuItem>
               ))}
             </div>

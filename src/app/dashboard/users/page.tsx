@@ -6,7 +6,6 @@ import { eq, desc } from "drizzle-orm"
 import { AddUserForm } from "@/components/add-user-form"
 import { UserList } from "@/components/user-list"
 
-
 export default async function AdminUsersPage() {
   const supabase = await createClient()
   
@@ -16,17 +15,27 @@ export default async function AdminUsersPage() {
     redirect("/auth/login")
   }
 
-  // 2. SERVER-SIDE ROLE CHECK (The Critical Fix)
-  // We fetch the role from the database, not the potentially stale session
+  // 2. SERVER-SIDE ROLE CHECK
   const dbUser = await db.query.users.findFirst({
     where: eq(users.id, user.id),
     columns: { role: true }
   })
 
- if (dbUser?.role !== 'admin') redirect("/dashboard")
+  if (dbUser?.role !== 'admin') redirect("/dashboard")
 
-  // --- Safe to render Admin content below ---
-  const allUsers = await db.select().from(users).orderBy(desc(users.createdAt))
+  
+  const allUsers = await db.query.users.findMany({
+    orderBy: (users, { desc }) => [desc(users.createdAt)],
+    columns: {
+      id: true,
+      email: true,
+      name: true,
+      mobileNumber: true,
+      role: true,
+      createdAt: true,
+      avatarUrl: true, 
+    }
+  })
 
   return (
     <div className="p-8 h-screen flex flex-col">
