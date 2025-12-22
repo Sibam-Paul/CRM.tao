@@ -48,13 +48,21 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
 
   // 1. Toast & Reset Logic
   useEffect(() => {
-    if (state.success) {
-      toast.success("Email sent successfully!")
-      formRef.current?.reset()
-    } else if (state.error) {
-      toast.error(state.error)
-    }
-  }, [state])
+  if (state.success) {
+    // ✅ RICH SUCCESS TOAST
+    toast.success("Email Sent Successfully", {
+      description: "Your message has been queued for delivery.",
+      duration: 4000, // 4 seconds
+    })
+    formRef.current?.reset()
+  } else if (state.error) {
+    // ❌ RICH ERROR TOAST
+    toast.error("Delivery Failed", {
+      description: state.error,
+    })
+  }
+}, [state])
+
 
   // 2. Auto-Scroll Logic
   useEffect(() => {

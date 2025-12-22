@@ -38,8 +38,9 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
   const [liftPx, setLiftPx] = useState(0)
   const [anchorShift, setAnchorShift] = useState(0)
   const measuringRef = useRef<HTMLDivElement | null>(null)
-   
-  const LIFT_DURATION = 500 
+    
+  // ⚡ FIX 1: Match the duration constants perfectly
+  const LIFT_DURATION = 400 // Slightly faster feels smoother
   const DEFAULT_LIFT = 200 
   const GAP_OFFSET = 25 
 
@@ -49,27 +50,25 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
     router.push("/")
   }
 
-  // Unified Toggle Function to prevent sync issues
   const toggleMenu = (open: boolean) => {
     if (open) {
-      // OPENING: Measure and Lift
+      // OPENING
       const measured = (measuringRef.current?.offsetHeight ?? DEFAULT_LIFT) + GAP_OFFSET
       setLiftPx(measured)
       setAnchorShift(measured) 
       setIsLifting(true)
       setIsMenuOpen(true) 
     } else {
-      // CLOSING (The Fix): 
-      // 1. Drop the button and anchor IMMEDIATELY
+      // CLOSING
       setIsLifting(false) 
       setLiftPx(0)
       setAnchorShift(0)
 
-      // 2. Keep the menu OPEN while the button drops (for 500ms)
-      // This ensures the menu slides down visually with the button
+      // ⚡ FIX 2: Wait for the FULL animation before unmounting
+      // This prevents the "snap" effect where content vanishes mid-animation
       setTimeout(() => {
         setIsMenuOpen(false)
-      }, 90)
+      }, 50) 
     }
   }
 
@@ -131,15 +130,19 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
             />
           </DropdownMenuTrigger>
 
-          {/* VISUAL BUTTON */}
+          {/* VISUAL BUTTON - The one the user actually sees */}
           <div
             className={cn(
               "absolute bottom-2 left-2 right-2 h-14 bg-[#171717] border border-[#2E2F2F] flex items-center px-3 gap-3 pointer-events-none select-none",
-              "z-50",
-              "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              "z-50 ",
+              // ⚡ FIX 3: Use a standard smooth easing (Standard Easing)
+              "transition-all ease-in-out", 
               isMenuOpen ? "rounded-t-xl rounded-b-none border-b-[#171717]" : "rounded-xl"
             )}
-            style={{ transform: isLifting ? `translateY(-${liftPx}px)` : 'translateY(0)' }}
+            style={{ 
+              transform: isLifting ? `translateY(-${liftPx}px)` : 'translateY(0)',
+              transitionDuration: `${LIFT_DURATION}ms` // Bind CSS duration to JS constant
+            }}
           >
             <Avatar className="h-9 w-9 rounded-xl">
               <AvatarImage src={`https://avatar.vercel.sh/${userEmail}.png`} alt={userEmail} />
@@ -151,24 +154,23 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
             </div>
           </div>
 
-          {/* PRE-MEASUREMENT NODE (Keep this exactly as is) */}
-          <div ref={measuringRef} className="w-58 bg-transparent absolute opacity-0 pointer-events-none left-2 invisible">
+          {/* Measurement Node */}
+          <div ref={measuringRef} className="w-50 bg-transparent absolute opacity-0 pointer-events-none left-2 invisible">
              <div className="p-4"><div className="h-40"></div></div>
           </div>
 
-          {/* ACTUAL MENU CONTENT */}
           <DropdownMenuContent 
             className={cn(
-              
-                "w-60 bg-[#171717] border border-[#2E2F2F] shadow-none z-40 mb-3 rounded-b-xl rounded-t-none border-t-0 -mt-px",
-                  "overflow-hidden origin-top"
-                )}
-                align="start"
+                "w-59.5 bg-[#171717] border border-[#2E2F2F] shadow-none z-40 mb-3 rounded-b-xl rounded-t-none border-t-0 -mt-px",
+                "overflow-hidden origin-top",
+                // ⚡ FIX 4: Add Exit Animations so it fades out smoothly
+                "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:slide-out-to-top-2"
+            )}
+            align="start"
             side="bottom"
             sideOffset={0} 
             avoidCollisions={false}
           >
-            {/* NO 'hidden' checks here - let the mounting handle it */}
             <div className="animate-in fade-in slide-in-from-top-2 duration-300 fill-mode-forwards">
               <DropdownMenuLabel className="font-normal mb-1">
                 <div className="flex flex-col space-y-1">
@@ -187,7 +189,7 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
               ].map((item, idx) => (
                 <DropdownMenuItem 
                   key={idx}
-                  className="cursor-pointer animate-in fade-in slide-in-from-top-1 duration-300 fill-mode-forwards"
+                  className="cursor-pointer animate-in  slide-in-from-top-1 duration-300 fill-mode-forwards"
                   style={{ animationDelay: item.delay }}
                 >
                   <item.icon className="mr-2 h-4 w-4" />
@@ -201,13 +203,11 @@ export function DashboardSidebar({ userEmail, userRole }: DashboardSidebarProps)
             <DropdownMenuItem 
               onClick={handleSignOut}
               className={cn(
-                "cursor-pointer animate-in fade-in slide-in-from-top-1 duration-300 fill-mode-forwards",
-                // Removes default background bar and sets hover colors
+                "cursor-pointer animate-in  slide-in-from-top-1 duration-300 fill-mode-forwards",
                 "focus:bg-red-500/10 focus:text-red-500 transition-colors group"
               )}
               style={{ animationDelay: '450ms' }}
             >
-              {/* Remove 'text-white' from LogOut icon so it inherits the focus:text-red-500 */}
               <LogOut className="mr-2 h-4 w-4 transition-colors" /> 
               <span className="font-medium">Log out</span>
             </DropdownMenuItem>

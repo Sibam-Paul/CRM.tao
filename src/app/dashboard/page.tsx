@@ -119,8 +119,8 @@ export default async function DashboardPage() {
 
 
   return (
-    <div className="p-8 bg-[#0A0A0A] min-h-full">
-      <div className="mb-8">
+    <div className="p-2 mr-2 bg-[#0A0A0A] min-h-full">
+      <div className="m-3">
         <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
         <p className="text-muted-foreground">Welcome back, {getFirstName()}!</p>
       </div>

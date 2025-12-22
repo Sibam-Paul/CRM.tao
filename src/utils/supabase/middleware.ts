@@ -2,9 +2,11 @@ import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  
   let response = NextResponse.next({
     request: { headers: request.headers },
   })
+  response.headers.set('x-middleware-cache', 'no-cache')
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,23 +23,46 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch (error) {
+   
+    console.error("Middleware Auth Error:", error)
+  }
 
   const path = request.nextUrl.pathname
-  
+  const hasError = request.nextUrl.searchParams.has('error') 
+
+  let redirectUrl: URL | null = null;
+
   if (path.startsWith('/dashboard') && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    return NextResponse.redirect(url)
+    redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/auth/login'
+ 
+    if (!hasError) redirectUrl.searchParams.set('error', 'please_login') 
+      
   }
 
-  // 2. If user IS logged in and tries to access login page -> Redirect to Dashboard
-  if (path.startsWith('/auth') && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+
+  if ((path.startsWith('/auth') || path === '/') && user && !hasError) {
+    redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/dashboard'
+    redirectUrl.searchParams.delete('error')
   }
 
+  if (redirectUrl) {
+    const redirectResponse = NextResponse.redirect(redirectUrl)
+
+    const newCookies = response.cookies.getAll()
+    newCookies.forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+
+    return redirectResponse
+  }
 
   return response 
 }

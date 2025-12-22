@@ -30,9 +30,10 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
     .from(users)
     .where(eq(users.id, user.id))
 
-  if (dbUser[0]?.role !== 'admin') {
-     return { success: false, error: "Unauthorized: Admins only.", message: "" }
-  }
+    // giving users email access for now 
+  // if (dbUser[0]?.role !== 'admin') {   
+  //    return { success: false, error: "Unauthorized: Admins only.", message: "" }
+  // }
   // Environment check
   if (!process.env.MAILEROO_DOMAIN || !process.env.MAILEROO_API_KEY) {
      return { success: false, error: "Server configuration missing (Env)", message: "" }

@@ -20,21 +20,30 @@ export function AddUserForm() {
     const form = e.currentTarget 
     const formData = new FormData(form)
     
+    // ... inside handleSubmit ...
     const result = await createUser(formData)
-    
     setIsLoading(false)
 
     if (result.success) {
-      toast.success("User created successfully!")
-      // 2. Use the captured variable instead of e.currentTarget
+      // Capture the name/email for a better message
+      const name = formData.get("name") as string
+
+      // ✅ RICH SUCCESS TOAST
+      toast.success("User Created", {
+        description: `Account for ${name} has been successfully added to the CRM.`,
+      })
+      
       form.reset() 
     } else {
-      toast.error("Error: " + result.error)
+      // ❌ RICH ERROR TOAST
+      toast.error("Creation Failed", {
+        description: result.error,
+      })
     }
   }
 
   return (
-    <Card className="max-w-2xl bg-[#171717] border border-[#2E2F2F] ">
+    <Card className="max-w-2xl  bg-[#171717] border border-[#2E2F2F] ">
       <CardHeader>
         <CardTitle>Create New User</CardTitle>
       
@@ -88,7 +97,7 @@ export function AddUserForm() {
             </select>
           </div>
 
-          <Button type="submit" disabled={isLoading} className="w-[30%] h-10 bg-white text-black font-bold hover:bg-[#E5E5E5]">
+          <Button type="submit" disabled={isLoading} className="w-[30%] h-10 bg-white cursor-pointer   text-black font-bold hover:bg-[#E5E5E5]">
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><UserPlus className="mr-2 h-4 w-4"/> Create Account</>}
           </Button>
         </form>
