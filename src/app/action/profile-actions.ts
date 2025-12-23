@@ -6,7 +6,6 @@ import { users } from "@/db/schema"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { eq, ilike, or, and, ne, desc } from "drizzle-orm"
-import { toast } from "sonner"
 
 // to prevent malacious script from the users 
 const PAGE_SIZE = 20
@@ -109,9 +108,7 @@ export async function updateAvatar(url: string) {
 
   
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    toast.error("Creation Failed", {
-        description: "Invalid image."
-    })
+    
     return { success: false, error: "Invalid image URL. Must start with http:// or https://" }
   }
 

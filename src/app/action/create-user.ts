@@ -7,7 +7,6 @@ import { db } from '@/db'
 import { users } from '@/db/schema' 
 import { eq } from "drizzle-orm" 
 import { createClient as createSupabaseServer } from "@/utils/supabase/server" 
-import { toast } from "sonner"
 
 export async function createUser(formData: FormData) {
   const supabase = await createSupabaseServer()
@@ -36,9 +35,7 @@ export async function createUser(formData: FormData) {
   const mobileNumber = formData.get('mobileNumber') as string
   
   if (!email || email.length < 6) {
-     toast.error("Creation Failed", {
-        description: "Email must be at least 6 characters long."
-      })
+    
     return { success: false, error: "Email must be at least 6 characters long." }
   }
   // Generate Password
