@@ -22,6 +22,7 @@ type EmailLog = {
     body: string
     status: string | null
     sentAt: Date | null
+    sender_name: string | null
 }
 
 const initialState: EmailState = {
@@ -56,7 +57,7 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
     })
     formRef.current?.reset()
   } else if (state.error) {
-    // ❌ RICH ERROR TOAST
+   
     toast.error("Delivery Failed", {
       description: state.error,
     })
@@ -82,7 +83,8 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
         return (
             email.subject.toLowerCase().includes(lowerQuery) ||
             email.recipients.toLowerCase().includes(lowerQuery) ||
-            cleanBody.includes(lowerQuery)
+            cleanBody.includes(lowerQuery) ||
+            (email.sender_name && email.sender_name.toLowerCase().includes(lowerQuery))
         );
     });
   }, [logs, searchQuery]);
@@ -173,6 +175,7 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
               <input 
                 name="title" 
                 placeholder="e.g. Support Team" 
+                defaultValue="TheAlphaOnes"
                 className="bg-transparent w-[40%] border border-[#373737] rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#575757] focus:border-[#575757]" 
                 required 
               />
@@ -313,7 +316,9 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
                             </Avatar>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="font-bold text-sm text-foreground">CRM.tao</span>
+                                    <span className="font-bold text-lg text-foreground">
+                                      {selectedEmail.sender_name || "System Notification"}
+                                    </span>
                                     <span className="text-xs text-muted-foreground">&lt;noreply@{process.env.NEXT_PUBLIC_MAILEROO_DOMAIN || 'domain.com'}&gt;</span>
                                 </div>
                                 <div className="text-xs text-muted-foreground">
@@ -327,19 +332,19 @@ export default function EmailDashboard({ logs }: { logs: EmailLog[] }) {
                     </div>
 
                     {/* Email Body Content */}
-                    <div className="prose prose-sm max-w-none text-gray-300 dark:prose-invert">
-                        {/* 2. Sanitize BEFORE rendering */}
+                    <div className="prose prose-sm text-lg max-w-none text-gray-300 dark:prose-invert">
+                        
                         <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedEmail.body) }} />
                     </div>
 
-                    <Separator className="my-8 bg-[171717]" />
+                    <Separator className="my-8 bg-[#2D2D2D]" />
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
-                        <Button className="gap-2 text-[#848484] border border-[#2D2D2D] hover:text-foreground hover:bg-[#222222] bg-[171717]">
+                        <Button variant="outline" className="gap-2 text-[#848484] border-[#2D2D2D] hover:text-foreground hover:bg-[#222222] bg-transparent">
                             <Reply className="w-4 h-4" />Reply
                         </Button>
-                        <Button className="gap-2 text-[#848484] border border-[#2D2D2D] hover:text-foreground hover:bg-[#222222] bg-[171717]">
+                        <Button variant="outline" className="gap-2 text-[#848484] border-[#2D2D2D] hover:text-foreground hover:bg-[#222222] bg-transparent">
                             <Forward className="w-4 h-4" />Forward
                         </Button>
                     </div>

@@ -21,6 +21,7 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
   const subject = formData.get("subject") as string
   const message = formData.get("message") as string
   
+  
   const supabase = await createSupabaseServer()
   const { data: { user } } = await supabase.auth.getUser()
   
@@ -67,8 +68,9 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
     const data = await response.json()
 
     if (!data.success) {
+      alert("failed to set the message")
+          console.log("failed to send the message");
       return { success: false, error: data.message || "Failed to send", message: "" }
-      console.log("failed to send the message");
       
     }
 
@@ -79,6 +81,7 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
       type: 'direct',
       status: 'sent',
       sentAt: new Date(),
+      sender_name: displayName,
     })
 
     revalidatePath('/dashboard/email')

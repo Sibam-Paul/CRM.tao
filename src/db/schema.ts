@@ -9,7 +9,8 @@ export const users = pgTable('users', {
   mobileNumber: text("mobile_number").notNull().unique(),
   role: text('role').default('user'), // 'admin' or 'user'
   avatarUrl: text('avatar_url'),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow(), 
+  updatedAt: timestamp('updated_at').defaultNow().$onUpdate(() => new Date()),
 });
 
 // 2. EMAIL LOGS TABLE
@@ -21,5 +22,6 @@ export const emailLogs = pgTable('email_logs', {
   body: text('body').notNull(),
   type: text('type').notNull(), // 'broadcast' or 'direct'
   status: text('status').default('sent'),
+  sender_name: text("title").default("email-dashboard"), // title
   sentAt: timestamp('sent_at').defaultNow(),
 });

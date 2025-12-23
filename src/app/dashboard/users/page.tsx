@@ -2,9 +2,10 @@ import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
 import { db } from "@/db"
 import { users } from "@/db/schema"
-import { eq, desc } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import { AddUserForm } from "@/components/add-user-form"
 import { UserList } from "@/components/user-list"
+import { fetchUsers } from "@/app/action/profile-actions"
 
 export default async function AdminUsersPage() {
   const supabase = await createClient()
@@ -15,7 +16,7 @@ export default async function AdminUsersPage() {
     redirect("/auth/login")
   }
 
-  // 2. SERVER-SIDE ROLE CHECK
+  
   const dbUser = await db.query.users.findFirst({
     where: eq(users.id, user.id),
     columns: { role: true }
@@ -23,19 +24,8 @@ export default async function AdminUsersPage() {
 
   if (dbUser?.role !== 'admin') redirect("/dashboard")
 
-  
-  const allUsers = await db.query.users.findMany({
-    orderBy: (users, { desc }) => [desc(users.createdAt)],
-    columns: {
-      id: true,
-      email: true,
-      name: true,
-      mobileNumber: true,
-      role: true,
-      createdAt: true,
-      avatarUrl: true, 
-    }
-  })
+
+  const { data: initialUsers } = await fetchUsers(0, "", user.id)
 
   return (
     <div className="p-8 h-screen flex flex-col">
@@ -53,7 +43,8 @@ export default async function AdminUsersPage() {
         </div>
         
         <div className="min-h-0">
-          <UserList initialUsers={allUsers} />
+          {/* Pass the data fetched via the action */}
+          <UserList initialUsers={initialUsers} currentUserId={user.id} />
         </div>
       </div>
     </div>
