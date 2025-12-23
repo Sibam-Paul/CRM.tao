@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { GripVertical, CheckCircle2, Loader, Users, DollarSign, Activity } from "lucide-react"
+
+import { GripVertical, CheckCircle2, Loader, Users, DollarSign, Activity , TriangleAlert} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default async function DashboardPage() {
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
       trendText: "Trending up this month",
       description: "Revenue for the last 6 months",
     },
-    {
+    { 
       title: "Subscriptions",
       value: "+2,350",
       change: "+180.1%",
@@ -129,12 +130,19 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {stats.map((stat) => {
           const Icon = stat.icon
+
           return (
             <Card key={stat.title} className="overflow-hidden bg-[#171717] border border-[#2D2D2D]">
+              
               <CardHeader className="flex flex-row items-center justify-between pb-2">
+                
                 <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
+                
                 <Icon className="w-4 h-4 text-muted-foreground" />
+                
               </CardHeader>
+              <div className="flex text-lg font-bold gap-2"> <TriangleAlert className="ml-7 text-yellow-300"/> <p>dummy data</p> </div>
+             
               <CardContent>
                 <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
                 <div className="flex items-center gap-2 mb-2">
@@ -156,16 +164,18 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Activity Table */}
-      <Card className="border-border/50 rounded-md bg-[#171717] border border-[#2D2D2D]">
+      <Card className="border-border/50 rounded-md bg-[#171717] border">
         <CardHeader>
           <CardTitle className="text-foreground">Proposal Sections</CardTitle>
+          <div className="flex text-sm font-bold gap-2"> <TriangleAlert className=" text-yellow-300 w-4"/> <p>dummy data</p> </div>
+
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border/50">
-                <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="w-[50px]"></TableHead>
+                <TableHead className="w-12.5"></TableHead>
+                <TableHead className="w-12.5"></TableHead>
                 <TableHead>Header</TableHead>
                 <TableHead>Section Type</TableHead>
                 <TableHead>Status</TableHead>

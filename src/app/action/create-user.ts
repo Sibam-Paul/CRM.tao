@@ -33,7 +33,19 @@ export async function createUser(formData: FormData) {
   const role = formData.get('role') as string
   const name = formData.get('name') as string
   const mobileNumber = formData.get('mobileNumber') as string
+  
+  if (!email || email.length < 6) {
+    
+    return { success: false, error: "Email must be at least 6 characters long." }
+  }
+  if (name.length < 1) {
+     return { success: false, error: "Name is required." }
+  }
 
+  
+  if (mobileNumber.length <= 10 || mobileNumber.length >= 12) {
+    return { success: false, error: "Mobile number must have atleast 10 digits." }
+  }
   // Generate Password
   const cleanName = name.split(' ')[0];
   const mobilePrefix = mobileNumber.substring(0, 4);

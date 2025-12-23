@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm"
 import { createClient as createSupabaseServer } from "@/utils/supabase/server"
 
 export async function deleteUser(formData: FormData) {
-  // 1. SESSION CHECK
+
   const supabase = await createSupabaseServer()
   const { data: { user: currentAdmin } } = await supabase.auth.getUser()
 
@@ -16,7 +16,7 @@ export async function deleteUser(formData: FormData) {
     return { success: false, error: "Unauthorized: No session found." }
   }
 
-  // 2. INPUT VALIDATION
+  
   const targetUserId = formData.get('targetUserId') as string
   const adminPassword = formData.get('adminPassword') as string
 
@@ -24,12 +24,12 @@ export async function deleteUser(formData: FormData) {
     return { success: false, error: "Missing required fields." }
   }
 
-  // 🛡️ SECURITY: Prevent Self-Deletion
+ 
   if (targetUserId === currentAdmin.id) {
     return { success: false, error: "Operation Failed: You cannot delete your own admin account." }
   }
 
-  // 3. DB ROLE CHECK
+
   const dbAdmin = await db.query.users.findFirst({
     where: eq(users.id, currentAdmin.id),
     columns: { role: true }
@@ -39,7 +39,6 @@ export async function deleteUser(formData: FormData) {
     return { success: false, error: "Access Denied: Admins only." }
   }
 
-  // 4. SANDBOX VERIFICATION (No Session Corruption)
   const verifyClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -65,7 +64,7 @@ export async function deleteUser(formData: FormData) {
     return { success: false, error: "Incorrect admin password." }
   }
 
-  // 5. EXECUTE DELETE (Service Role)
+  
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!, 
@@ -73,16 +72,17 @@ export async function deleteUser(formData: FormData) {
   )
 
   try {
-    // A. Delete from Supabase Auth
+    
+    await db.delete(users).where(eq(users.id, targetUserId))
+
+    // Then delete from Auth
     const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(targetUserId)
     
-    // Handle "User not found" gracefully (Clean up Zombie records)
     if (deleteAuthError && !deleteAuthError.message.includes("User not found")) {
-      throw deleteAuthError
+      // If Auth delete fails, log it. The user is removed from the App (DB), 
+      // effectively banning them, even if their Auth record lingers.
+      console.error("Warning: User deleted from DB but Auth deletion failed:", deleteAuthError)
     }
-
-    // B. Delete from Database
-    await db.delete(users).where(eq(users.id, targetUserId))
     
     revalidatePath('/dashboard/users')
     return { success: true }

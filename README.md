@@ -37,6 +37,7 @@ Make sure you have [Node.js](https://nodejs.org/en/) and [pnpm](https://pnpm.io/
 2.  **Install dependencies:**
     ```bash
     pnpm install
+    npm install -D drizzle-kit
     npm install drizzle-orm postgres
     npm install @supabase/supabase-js @supabase/ssr
     ```
@@ -56,7 +57,7 @@ Make sure you have [Node.js](https://nodejs.org/en/) and [pnpm](https://pnpm.io/
     Apply the Drizzle schema to your Supabase database.
 
     ```bash
-    pnpm drizzle-kit push
+    npx drizzle-kit push
     ```
 
 5.  **Run the development server:**
