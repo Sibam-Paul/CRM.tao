@@ -111,6 +111,9 @@ export function ProfileView({ user }: ProfileViewProps) {
                   id="mobileNumber" 
                   name="mobileNumber" 
                   defaultValue={user.mobileNumber || ""} 
+                  onInput={(e) => {
+                    e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "")
+                  }}
                   className="bg-black/20 border-[#2E2F2F]" 
                 />
               </div>

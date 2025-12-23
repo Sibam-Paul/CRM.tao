@@ -38,6 +38,14 @@ export async function createUser(formData: FormData) {
     
     return { success: false, error: "Email must be at least 6 characters long." }
   }
+  if (name.length > 3) {
+     return { success: false, error: "Name is required." }
+  }
+
+  
+  if (mobileNumber.length <= 10 || mobileNumber.length >= 12) {
+    return { success: false, error: "Mobile number must be exactly 10 digits." }
+  }
   // Generate Password
   const cleanName = name.split(' ')[0];
   const mobilePrefix = mobileNumber.substring(0, 4);

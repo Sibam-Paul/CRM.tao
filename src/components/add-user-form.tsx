@@ -81,6 +81,9 @@ export function AddUserForm() {
               name="mobileNumber" 
               placeholder="Mobile Number" 
               required 
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "")
+              }}
               className="pl-3 h-9 w-full border rounded-md bg-transparent outline-none border-[#373737] focus:ring-2 focus:ring-[#575757]"
             />
           </div>

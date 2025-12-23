@@ -120,7 +120,7 @@ export async function updateAvatar(url: string) {
     revalidatePath('/', 'layout')
     return { success: true }
   } catch (error) {
-    console.error("Profile Update Error:", error)
+    console.error("Profile Update Error:", error)  
     return { success: false, error: "Failed to update profile." }
   }
 }

@@ -191,8 +191,8 @@ export function DashboardSidebar({ userEmail, userRole, userName, userAvatar }: 
 
             <div className="space-y-1">
               {[
-                { icon: TriangleAlert, label: "under-construction", delay: '150ms' , href: "/dashboard" }, 
-                { icon: TriangleAlert, label: "under-construction", delay: '250ms' , href: "/dashboard"  }, 
+                { icon: TriangleAlert, label: "under-construction", delay: '150ms' , href: "/dashboard" , col:"text-yellow-300"}, 
+                { icon: TriangleAlert, label: "under-construction", delay: '250ms' , href: "/dashboard" , col:"text-yellow-300" }, 
                 {
                   icon: User, 
                   label: "Profile settings", 
@@ -207,7 +207,7 @@ export function DashboardSidebar({ userEmail, userRole, userName, userAvatar }: 
                   asChild
                 >
                  <Link href={item.href }>
-                    <item.icon className="mr-2 h-4 w-4" />
+                    <item.icon  className= {`mr-2 ${item.col} h-4 w-4`}/>
                     <span>{item.label}</span>
                   </Link>
                 </DropdownMenuItem>

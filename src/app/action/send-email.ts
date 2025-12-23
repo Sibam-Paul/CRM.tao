@@ -68,7 +68,6 @@ export async function sendEmail(prevState: EmailState, formData: FormData): Prom
     const data = await response.json()
 
     if (!data.success) {
-      alert("failed to set the message")
           console.log("failed to send the message");
       return { success: false, error: data.message || "Failed to send", message: "" }
       
