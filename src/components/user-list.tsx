@@ -132,7 +132,7 @@ export function UserList({ initialUsers, currentUserId }: { initialUsers: CRMUse
   }
 
   return (
-    <div className="flex flex-col h-[85%] bg-[#171717] border border-[#2E2F2F] rounded-xl ">
+    <div className="flex flex-col h-[60vh] bg-[#171717] border border-[#2E2F2F] rounded-xl ">
       <div className="p-4 border-b border-[#2E2F2F] space-y-4">
         <h3 className="text-lg font-semibold text-foreground">Active Members</h3>
         <div className="relative">

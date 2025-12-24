@@ -43,7 +43,7 @@ export function AddUserForm() {
   }
 
   return (
-    <Card className="max-w-2xl  bg-[#171717] border border-[#2E2F2F] ">
+    <Card className="max-w-2xl p-10  h-[60vh] bg-[#171717] border border-[#2E2F2F] ">
       <CardHeader>
         <CardTitle>Create New User</CardTitle>
       

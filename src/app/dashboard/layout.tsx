@@ -17,8 +17,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     where: eq(users.id, user.id),
     columns: { 
       role: true, 
-      name: true,       // 👈 Add this
-      avatarUrl: true   // 👈 Add this
+      name: true,       
+      avatarUrl: true  
     } 
   })
 
