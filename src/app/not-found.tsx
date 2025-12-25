@@ -20,12 +20,12 @@ export default function NotFound() {
 
       {/* Subtle spotlight/glow effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-[500px] bg-white/5 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-white/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center px-4 animate-in fade-in zoom-in duration-500">
         {/* Massive Professional 404 Typography */}
-        <h1 className="text-[120px] md:text-[180px] font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 select-none">
+        <h1 className="text-[120px] md:text-[180px] font-black leading-none tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-white to-white/10 select-none">
           404
         </h1>
 
