@@ -76,8 +76,9 @@ export function DashboardSidebar({ userEmail, userRole, userName, userAvatar }: 
 
   return (
     <aside className="w-64 rounded-xl m-2 border border-[#2E2F2F] bg-[#171717] flex flex-col h-[98%] relative overflow-hidden">
-      <div className="p-4 border-b border-[#2E2F2F]">
-        <h1 className="text-2xl font-bold text-foreground">CRM.tao</h1>
+      <div className="p-4 gap-3  border-[#2E2F2F] flex ">
+        <svg fill="currentColor" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="size-6 md:size-8 text-white"><path d="M50 10L80 80H65L50 50L35 80H20L50 10Z" fill="currentColor"></path><circle cx="50" cy="35" r="5" fill="currentColor"></circle></svg>
+        <h1 className="text-2xl font-bold text-foreground"> CRM.tao</h1>
       </div>
 
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
