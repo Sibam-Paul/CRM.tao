@@ -75,7 +75,7 @@ export function DashboardSidebar({ userEmail, userRole, userName, userAvatar }: 
   }
 
   return (
-    <aside className="w-64 rounded-xl m-2 border border-[#2E2F2F] bg-[#171717] flex flex-col h-[98%] relative overflow-hidden">
+    <aside className="w-64 rounded-none md:rounded-xl m-0 md:m-2 border-r md:border border-[#2E2F2F] bg-[#171717] flex flex-col h-full md:h-[98%] relative overflow-hidden">
       <div className="p-4 border-b border-[#2E2F2F]">
         <h1 className="text-2xl font-bold text-foreground">CRM.tao</h1>
       </div>
