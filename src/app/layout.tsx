@@ -24,6 +24,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'CRM Tao',
   },
+  icons: {
+    icon:'/icon-192x192.png', 
+    apple: '/icon-192x192.png' , 
+  }, 
 }
 
 // 2. VIEWPORT: Handles Theme Color and Scaling (Must be separate)
