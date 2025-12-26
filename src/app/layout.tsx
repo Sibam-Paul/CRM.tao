@@ -24,6 +24,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'CRM Tao',
   },
+  icons: {
+    icon:'/favicon.png', 
+    apple: '/favicon.png' , 
+  }, 
 }
 
 // 2. VIEWPORT: Handles Theme Color and Scaling (Must be separate)
@@ -31,8 +35,8 @@ export const viewport: Viewport = {
   themeColor: '#0A0A0A',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false, // Prevents zooming like a native app
+  maximumScale: 5, // Allow zoom for accessibility
+  userScalable: true, // Enable zoom for accessibility (WCAG compliance)
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
