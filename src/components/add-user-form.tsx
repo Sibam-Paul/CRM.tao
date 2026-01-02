@@ -43,16 +43,16 @@ export function AddUserForm() {
   }
 
   return (
-    <Card className="max-w-2xl p-4 md:p-10 h-[60vh] bg-[#171717] border border-[#2E2F2F]">
+    <Card className="max-w-2xl p-4 md:p-10 h-auto bg-[#171717] border border-[#2E2F2F]">
       <CardHeader>
-        <CardTitle>Create New User</CardTitle>
+        <CardTitle className="md:text-xl">Create New User</CardTitle>
 
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
 
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            {/* <Label htmlFor="name">Full Name</Label> */}
             <input
               id="name"
               name="name"
@@ -63,7 +63,7 @@ export function AddUserForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            {/* <Label htmlFor="email">Email Address</Label> */}
             <input
               id="email"
               name="email"
@@ -75,7 +75,7 @@ export function AddUserForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mobileNumber">Mobile Number</Label>
+            {/* <Label htmlFor="mobileNumber">Mobile Number</Label> */}
             <input
               id="mobileNumber"
               name="mobileNumber"
@@ -88,7 +88,7 @@ export function AddUserForm() {
             />
           </div>
 
-          <div className="flex gap-7 items-center">
+          <div className="flex gap-4 items-center">
           <select 
             name="role" 
             id="role" 
@@ -101,8 +101,8 @@ export function AddUserForm() {
               <option value="admin">Admin</option>
           </select>
 
-          <Button type="submit" disabled={isLoading} className="w-[50%] h-10 bg-white cursor-pointer text-black font-bold hover:bg-[#E5E5E5]">
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><UserPlus className="mr-2 h-4 w-4"/> Create Account</>}
+          <Button type="submit" disabled={isLoading} className="w-[52%] h-10 bg-white cursor-pointer text-black font-bold hover:bg-[#E5E5E5]">
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><UserPlus className="h-4 w-4"/> Create Account</>}
           </Button>
         </div>
         </form>
