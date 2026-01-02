@@ -24,21 +24,12 @@ export function AddUserForm() {
     const result = await createUser(formData)
     setIsLoading(false)
 
-    if (result.success) {
-      // Capture the name/email for a better message
-      const name = formData.get("name") as string
-
-      // ✅ RICH SUCCESS TOAST
-      toast.success("User Created", {
-        description: `Account for ${name} has been successfully added to the CRM.`,
-      })
-
+   if (result.success) {
+      toast.success("User Created", { description: "Account successfully added." })
+      // 🧹 FIX: Only reset the form if the action succeeded
       form.reset()
     } else {
-
-      toast.error("Creation Failed", {
-        description: result.error,
-      })
+      toast.error("Creation Failed", { description: result.error })
     }
   }
 
@@ -82,7 +73,7 @@ export function AddUserForm() {
               placeholder="Mobile Number"
               required
               onInput={(e) => {
-                e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, "")
+                e.currentTarget.value = e.currentTarget.value.replace(/[^0-9+]/g, "")
               }}
               className="pl-3 h-11 md:h-9 text-base md:text-sm w-full border rounded-md bg-transparent outline-none border-[#373737] focus:ring-2 focus:ring-[#575757]"
             />
